@@ -7,8 +7,8 @@ from llm_seed_generator import generate_seed_data
 from sdv_scaler import scale_with_sdv
 from validator import validate_schema
 
-st.set_page_config(page_title="Synthetic Data Generator", layout="wide")
-st.title("🔐 ChatGPT + DataSynthesizer | Synthetic Data Generator")
+st.set_page_config(page_title="Synthetic Data Generator |Markelytics Solutions", layout="wide")
+st.title("Markelytics AI | Synthetic Studio")
 
 uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
 
