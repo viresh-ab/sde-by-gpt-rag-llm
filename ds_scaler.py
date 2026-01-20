@@ -1,28 +1,24 @@
-import tempfile
 import pandas as pd
+from sdv.single_table import GaussianCopulaSynthesizer
+from sdv.metadata import SingleTableMetadata
 
-from DataSynthesizer.DataDescriber import DataDescriber
-from DataSynthesizer.DataGenerator import DataGenerator
 
-def scale_with_datasynthesizer(seed_df, final_rows, epsilon):
-    with tempfile.TemporaryDirectory() as tmp:
-        seed_path = f"{tmp}/seed.csv"
-        desc_path = f"{tmp}/desc.json"
-        out_path = f"{tmp}/synthetic.csv"
+def scale_with_sdv(seed_df: pd.DataFrame, final_rows: int) -> pd.DataFrame:
+    # Build metadata automatically
+    metadata = SingleTableMetadata()
+    metadata.detect_from_dataframe(seed_df)
 
-        seed_df.to_csv(seed_path, index=False)
+    # Create synthesizer
+    synthesizer = GaussianCopulaSynthesizer(
+        metadata,
+        enforce_min_max_values=True,
+        enforce_rounding=True
+    )
 
-        describer = DataDescriber(category_threshold=20)
-        describer.describe_dataset_in_correlated_attribute_mode(
-            dataset_file=seed_path,
-            epsilon=epsilon
-        )
-        describer.save_dataset_description_to_file(desc_path)
+    # Train on LLM seed data
+    synthesizer.fit(seed_df)
 
-        generator = DataGenerator()
-        generator.generate_dataset_in_correlated_attribute_mode(
-            final_rows, desc_path
-        )
-        generator.save_synthetic_dataset_to_file(out_path)
+    # Generate final synthetic dataset
+    synthetic_df = synthesizer.sample(num_rows=final_rows)
 
-        return pd.read_csv(out_path)
+    return synthetic_df
