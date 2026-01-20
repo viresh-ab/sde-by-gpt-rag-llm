@@ -2,6 +2,6 @@ streamlit
 pandas
 numpy
 openai>=1.0.0
-DataSynthesizer
+sdv>=1.10
 scipy
 python-dotenv
