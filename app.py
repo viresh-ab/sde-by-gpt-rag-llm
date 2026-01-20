@@ -4,7 +4,7 @@ import tempfile
 
 from schema_extractor import extract_schema
 from llm_seed_generator import generate_seed_data
-from ds_scaler import scale_with_datasynthesizer
+from sdv_scaler import scale_with_sdv
 from validator import validate_schema
 
 st.set_page_config(page_title="Synthetic Data Generator", layout="wide")
@@ -28,7 +28,7 @@ if uploaded_file:
             seed_df = generate_seed_data(schema, seed_rows)
             validate_schema(real_df, seed_df)
 
-            final_df = scale_with_datasynthesizer(seed_df, final_rows, epsilon)
+            final_df = scale_with_sdv(seed_df, final_rows)
 
             st.success("Synthetic data generated successfully!")
             st.dataframe(final_df.head())
