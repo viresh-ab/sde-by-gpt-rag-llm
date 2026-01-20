@@ -29,9 +29,15 @@ st.markdown(
         visibility: hidden !important;
         height: 0 !important;
     }
-._container_gzau3_1{
- width:0px !important;
-}
+   ._container_gzau3_1 {
+        z-index: -1!important;
+        font-size: .875rem;
+        line-height: 1.25rem;
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        display: flex;
+    }
     /* Stable fallbacks (future-proof) */
     div[data-testid="stViewerBadge"],
     div[data-testid="stToolbar"],
