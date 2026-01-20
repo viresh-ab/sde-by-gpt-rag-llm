@@ -7,19 +7,31 @@ from openai import OpenAI
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_seed_data(schema: dict, rows: int) -> pd.DataFrame:
+    columns = list(schema.keys())
+
     prompt = f"""
 You are a synthetic data generator.
 
-Schema:
+IMPORTANT:
+- The CSV MUST have EXACTLY these columns
+- SAME order
+- SAME spelling
+- NO extra columns
+
+COLUMNS (in order):
+{columns}
+
+COLUMN RULES:
 {json.dumps(schema, indent=2)}
 
-Rules:
-- Follow schema strictly
-- Maintain logical relationships
-- Do NOT copy real data
-- Generate {rows} rows
+Generate {rows} rows.
+
+Output rules:
 - Output CSV only
+- First row must be header EXACTLY as above
+- No explanations
 """
+
 
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
