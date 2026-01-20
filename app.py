@@ -11,9 +11,35 @@ st.set_page_config(page_title="Synthetic Data Generator |Markelytics Solutions",
 st.markdown(
     """
     <style>
-    /* Hide Streamlit header */
-    .stAppHeader {
-        display: none;
+    /* ================================
+       HIDE STREAMLIT DEFAULT UI
+       ================================ */
+
+    /* Hide top Streamlit header */
+    .stAppHeader,
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
+
+    /* Hide Streamlit Cloud viewer badge & profile container */
+    ._container_gzau3_1,
+    ._viewerBadge_nim44_23,
+    ._profileContainer_gzau3_53 {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+
+    /* Stable fallbacks (future-proof) */
+    div[data-testid="stViewerBadge"],
+    div[data-testid="stToolbar"],
+    div[data-testid="stStatusWidget"] {
+        display: none !important;
+    }
+
+    /* Optional: remove extra top padding caused by header */
+    .block-container {
+        padding-top: 1rem !important;
     }
     </style>
     """,
