@@ -30,7 +30,7 @@ st.markdown(
         height: 0 !important;
     }
 ._container_gzau3_1{
- display: none !important;
+ width:0px !important;
 }
     /* Stable fallbacks (future-proof) */
     div[data-testid="stViewerBadge"],
