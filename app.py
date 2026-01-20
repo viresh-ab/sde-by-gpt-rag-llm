@@ -8,6 +8,17 @@ from sdv_scaler import scale_with_sdv
 from validator import validate_schema
 
 st.set_page_config(page_title="Synthetic Data Generator |Markelytics Solutions", layout="wide")
+st.markdown(
+    """
+    <style>
+    /* Hide Streamlit header */
+    .stAppHeader {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 st.title("Markelytics AI | Synthetic Studio")
 
 uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
