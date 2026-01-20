@@ -6,17 +6,7 @@ from schema_extractor import extract_schema
 from llm_seed_generator import generate_seed_data
 from sdv_scaler import scale_with_sdv
 from validator import validate_schema
-st.markdown(
-    """
-    <style>
-    html, body, [class*="css"] {
-        background-color: #0E1117 !important;
-        color: #FAFAFA !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+
 st.set_page_config(page_title="Synthetic Data Generator |Markelytics Solutions", layout="wide")
 st.title("Markelytics AI | Synthetic Studio")
 
