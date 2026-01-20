@@ -29,7 +29,9 @@ st.markdown(
         visibility: hidden !important;
         height: 0 !important;
     }
-
+._container_gzau3_1{
+ display: none !important;
+}
     /* Stable fallbacks (future-proof) */
     div[data-testid="stViewerBadge"],
     div[data-testid="stToolbar"],
