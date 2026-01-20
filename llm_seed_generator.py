@@ -1,10 +1,10 @@
 import pandas as pd
-import openai
 import json
 import os
 from io import StringIO
+from openai import OpenAI
 
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_seed_data(schema: dict, rows: int) -> pd.DataFrame:
     prompt = f"""
@@ -18,12 +18,14 @@ Rules:
 - Maintain logical relationships
 - Do NOT copy real data
 - Generate {rows} rows
-- Output CSV only (no explanation)
+- Output CSV only
 """
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4.1-mini",
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
         temperature=0.2
     )
 
