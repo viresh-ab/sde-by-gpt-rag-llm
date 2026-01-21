@@ -2,94 +2,109 @@ import streamlit as st
 import pandas as pd
 
 from schema_extractor import extract_schema
-from llm_seed_generator import generate_seed_data
-from sdv_scaler import scale_with_sdv
+from qa_llm_generator import generate_qa_synthetic_data
 from validator import validate_schema
 
-# ---------------- Page Config ----------------
+# ---------------------------------------------------
+# Page config
+# ---------------------------------------------------
 st.set_page_config(
-    page_title="Synthetic Data Generator | Markelytics Solutions",
+    page_title="Markelytics AI | Synthetic Q&A Studio",
     layout="wide"
 )
 
-# ---------------- Hide Header ----------------
+# ---------------------------------------------------
+# Hide Streamlit UI (header, toolbar, badges)
+# ---------------------------------------------------
 st.markdown(
     """
     <style>
-    .stAppHeader,
-    header[data-testid="stHeader"] {
+    header[data-testid="stHeader"],
+    div[data-testid="stToolbar"],
+    div[data-testid="stViewerBadge"],
+    div[data-testid="stStatusWidget"] {
         display: none !important;
+    }
+
+    .block-container {
+        padding-top: 1rem !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-st.title("Markelytics AI | Synthetic Studio")
+# ---------------------------------------------------
+# App title
+# ---------------------------------------------------
+st.title("🧠 Markelytics AI | Synthetic Q&A Studio")
+st.caption("LLM-only synthetic generation for open-ended survey data")
 
-# ---------------- File Upload ----------------
-uploaded_file = st.file_uploader("Upload CSV file", type=["csv"])
+# ---------------------------------------------------
+# File upload
+# ---------------------------------------------------
+uploaded_file = st.file_uploader(
+    "Upload Q&A Survey CSV",
+    type=["csv"]
+)
 
-if uploaded_file is not None:
-    # Read CSV
-    real_df = pd.read_csv(uploaded_file)
+if uploaded_file:
+    try:
+        real_df = pd.read_csv(uploaded_file)
+    except Exception as e:
+        st.error("Failed to read CSV file")
+        st.code(str(e))
+        st.stop()
+
     st.success("CSV uploaded successfully")
+    st.subheader("Sample Input Data")
     st.dataframe(real_df.head())
 
-    # ---------------- User Inputs ----------------
-    seed_rows = st.number_input(
-        "Seed rows (LLM)",
-        min_value=100,
-        max_value=5000,
-        value=500,
-        step=100
-    )
-
+    # ---------------------------------------------------
+    # Controls
+    # ---------------------------------------------------
     final_rows = st.number_input(
-        "Final rows",
-        min_value=1000,
-        max_value=100000,
-        value=5000,
-        step=500
+        "Number of synthetic responses to generate",
+        min_value=50,
+        max_value=10000,
+        value=500,
+        step=50
     )
 
-    epsilon = st.slider(
-        "Privacy (ε)",
-        min_value=0.1,
-        max_value=5.0,
-        value=1.0
-    )
-
-    # ---------------- Generate Button ----------------
-    if st.button("Generate Synthetic Data"):
-        with st.spinner("Generating synthetic data..."):
+    # ---------------------------------------------------
+    # Generate button
+    # ---------------------------------------------------
+    if st.button("🚀 Generate Synthetic Q&A Data"):
+        with st.spinner("Generating synthetic Q&A responses..."):
             try:
-                # 1️⃣ Extract schema
+                # Extract schema (column names only)
                 schema = extract_schema(real_df)
 
-                # 2️⃣ Generate LLM seed data
-                seed_df = generate_seed_data(schema, seed_rows)
+                # LLM-only generation
+                synthetic_df = generate_qa_synthetic_data(
+                    sample_df=real_df,
+                    rows=final_rows
+                )
 
-                # 3️⃣ Validate schema
-                seed_df = validate_schema(real_df, seed_df)
+                # Enforce schema & order
+                synthetic_df = validate_schema(real_df, synthetic_df)
 
-                # 4️⃣ Scale using SDV
-                final_df = scale_with_sdv(seed_df, final_rows)
+                st.success("Synthetic Q&A data generated successfully 🎉")
 
-                st.success("Synthetic data generated successfully!")
-                st.dataframe(final_df.head())
+                st.subheader("Synthetic Data Preview")
+                st.dataframe(synthetic_df.head())
 
-                # ---------------- Download ----------------
+                # ---------------------------------------------------
+                # Download
+                # ---------------------------------------------------
                 st.download_button(
                     label="⬇ Download Synthetic CSV",
-                    data=final_df.to_csv(index=False),
-                    file_name="synthetic_data.csv",
+                    data=synthetic_df.to_csv(index=False),
+                    file_name="synthetic_qna_data.csv",
                     mime="text/csv"
                 )
 
             except Exception as e:
-                st.error("Synthetic data generation failed.")
+                st.error("Failed to generate synthetic Q&A data")
                 st.code(str(e))
                 st.stop()
-else:
-    st.info("Please upload a CSV file to continue.")
