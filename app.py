@@ -37,7 +37,7 @@ if uploaded_file:
             schema = extract_schema(real_df)
 
             seed_df = generate_seed_data(schema, seed_rows)
-            validate_schema(real_df, seed_df)
+            seed_df = validate_schema(real_df, seed_df)
 
             final_df = scale_with_sdv(seed_df, final_rows)
 
@@ -50,3 +50,11 @@ if uploaded_file:
                 "synthetic_data.csv",
                 "text/csv"
             )
+
+try:
+    seed_df = generate_seed_data(schema, seed_rows)
+    seed_df = validate_schema(real_df, seed_df)
+except Exception as e:
+    st.error("Schema validation failed for LLM seed data.")
+    st.code(str(e))
+    st.stop()
