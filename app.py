@@ -25,7 +25,6 @@ st.markdown(
     div[data-testid="stStatusWidget"] {
         display: none !important;
     }
-
     .block-container {
         padding-top: 1rem !important;
     }
@@ -38,10 +37,10 @@ st.markdown(
 # App Header
 # ----------------------------------------------------
 st.title("🧠 Markelytics AI | Synthetic Q&A Studio")
-st.caption("LLM-only synthetic generation for open-ended survey data")
+st.caption("LLM-only synthetic generation for open-ended survey data (batch-safe)")
 
 # ----------------------------------------------------
-# File upload
+# Upload CSV
 # ----------------------------------------------------
 uploaded_file = st.file_uploader(
     "Upload Q&A Survey CSV",
@@ -52,12 +51,11 @@ if uploaded_file:
     try:
         real_df = pd.read_csv(uploaded_file)
     except Exception as e:
-        st.error("Failed to read uploaded CSV file")
+        st.error("Failed to read uploaded CSV")
         st.code(str(e))
         st.stop()
 
     st.success("CSV uploaded successfully")
-    st.subheader("Sample Input Data")
     st.dataframe(real_df.head())
 
     # ----------------------------------------------------
@@ -67,47 +65,29 @@ if uploaded_file:
         "Number of synthetic responses to generate",
         min_value=50,
         max_value=10000,
-        value=500,
+        value=1000,
         step=50
     )
 
     # ----------------------------------------------------
-    # Generate synthetic data
+    # Generate
     # ----------------------------------------------------
     if st.button("🚀 Generate Synthetic Q&A Data"):
-        with st.spinner("Generating synthetic Q&A responses..."):
+        with st.spinner("Generating synthetic Q&A responses in batches..."):
             try:
-                # Extract schema (column names only)
+                # Schema extraction (column names only)
                 schema = extract_schema(real_df)
 
-                synthetic_df = None
-                last_error = None
+                synthetic_df = generate_qa_synthetic_data(
+                    sample_df=real_df,
+                    rows=final_rows
+                )
 
-                # Retry once if LLM formatting fails
-                for attempt in range(2):
-                    try:
-                        synthetic_df = generate_qa_synthetic_data(
-                            sample_df=real_df,
-                            rows=final_rows
-                        )
+                synthetic_df = validate_schema(real_df, synthetic_df)
 
-                        synthetic_df = validate_schema(real_df, synthetic_df)
-                        break
-
-                    except Exception as e:
-                        last_error = e
-
-                if synthetic_df is None:
-                    raise last_error
-
-                st.success("Synthetic Q&A data generated successfully 🎉")
-
-                st.subheader("Synthetic Data Preview")
+                st.success(f"Synthetic Q&A data generated ({len(synthetic_df)} rows) 🎉")
                 st.dataframe(synthetic_df.head())
 
-                # ----------------------------------------------------
-                # Download
-                # ----------------------------------------------------
                 st.download_button(
                     label="⬇ Download Synthetic CSV",
                     data=synthetic_df.to_csv(index=False),
