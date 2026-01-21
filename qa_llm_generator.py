@@ -9,43 +9,57 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_qa_synthetic_data(sample_df: pd.DataFrame, rows: int) -> pd.DataFrame:
     columns = list(sample_df.columns)
-
-    # Take a few example rows to show style (not copied)
     examples = sample_df.sample(min(5, len(sample_df)), random_state=42)
 
     prompt = f"""
 You are generating synthetic survey responses.
 
-IMPORTANT RULES:
-- Generate {rows} rows
-- Keep answers similar in STYLE and LENGTH to examples
-- Do NOT copy any example answer
-- Each answer must be unique
-- Keep natural language (full sentences)
+STRICT CSV RULES (VERY IMPORTANT):
 - Output CSV ONLY
-- Header must be exactly:
+- NO explanations
+- NO markdown
+- Every value MUST be wrapped in double quotes
+- Use commas ONLY as column separators
+- Do NOT add extra columns
+- Header must be EXACTLY:
 {columns}
 
-Example responses (for style only):
+Generate {rows} rows.
+
+Example format (for structure only):
+"Name","Q1","Q2","Q3",...
+
+Example rows (style reference only, do NOT copy):
 {examples.to_csv(index=False)}
 
-Now generate synthetic responses.
+Now generate the CSV.
 """
 
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.8
+        temperature=0.85
     )
 
-    text = response.choices[0].message.content.strip()
+    raw = response.choices[0].message.content.strip()
 
-    # Clean markdown if any
-    text = re.sub(r"```.*?```", "", text, flags=re.DOTALL).strip()
+    # Remove markdown if present
+    raw = re.sub(r"```.*?```", "", raw, flags=re.DOTALL).strip()
 
-    df = pd.read_csv(StringIO(text))
+    # --- SAFE CSV PARSING ---
+    try:
+        df = pd.read_csv(
+            StringIO(raw),
+            quotechar='"',
+            escapechar='\\',
+            engine="python"
+        )
+    except Exception as e:
+        raise ValueError(
+            "LLM generated malformed CSV.\n\nRAW OUTPUT:\n" + raw
+        ) from e
 
-    # Force schema order
+    # Enforce schema order
     df = df[columns]
 
     return df
